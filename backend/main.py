@@ -5,26 +5,67 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.orm import Mapped, mapped_column
-from flask_migrate import Migrate    
+from flask_migrate import Migrate  
+from sqlalchemy import Integer, String, ForeignKey                            # เพิ่ม import Foreignkey
+from sqlalchemy.orm import Mapped, mapped_column, relationship   
 
 app = Flask(__name__)
+CORS(app)
+
 class Base(DeclarativeBase):
   pass
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todos.db'
 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todos.db'
 db = SQLAlchemy(app, model_class=Base)
 migrate = Migrate(app, db)
 
-CORS(app)
 
-todo_list = [
-    { "id": 1,
-      "title": 'Learn Flask',
-      "done": True },
-    { "id": 2,
-      "title": 'Build a Flask App',
-      "done": False },
+with app.app_context():
+    db.create_all()
+
+
+class TodoItem(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(100))
+    done: Mapped[bool] = mapped_column(default=False)
+    comments: Mapped[list["Comment"]] = relationship(back_populates="todo")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "done": self.done,
+             "comments": [
+                comment.to_dict() for comment in self.comments
+            ]
+        }
+
+
+class Comment(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    message: Mapped[str] = mapped_column(String(250))
+    todo_id: Mapped[int] = mapped_column(ForeignKey('todo_item.id'))
+    todo: Mapped["TodoItem"] = relationship(back_populates="comments")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "message": self.message,
+            "todo_id": self.todo_id
+        }
+
+        
+
+INITIAL_TODOS = [
+    TodoItem(title='Learn Flask'),
+    TodoItem(title='Build a Flask App'),
 ]
+with app.app_context():
+    if TodoItem.query.count() == 0:
+         for item in INITIAL_TODOS:
+             db.session.add(item)
+         db.session.commit()
+
 
 @app.route('/api/todos/', methods=['GET'])
 def get_todos():
@@ -63,29 +104,3 @@ def delete_todo(id):
     db.session.commit()
     return jsonify({'message': 'Todo deleted successfully'})
 
-class TodoItem(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(100))
-    done: Mapped[bool] = mapped_column(default=False)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "title": self.title,
-            "done": self.done
-        }
-        
-with app.app_context():
-    db.create_all()
-
-
-INITIAL_TODOS = [
-    TodoItem(title='Learn Flask'),
-    TodoItem(title='Build a Flask App'),
-]
-
-with app.app_context():
-    if TodoItem.query.count() == 0:
-         for item in INITIAL_TODOS:
-             db.session.add(item)
-         db.session.commit()
