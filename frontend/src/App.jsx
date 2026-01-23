@@ -4,8 +4,8 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const TODOLIST_API_URL = 'http://127.0.0.1:5000/api/todos/';
-
+  const TODOLIST_API_URL = 'http://127.0.0.1:5000/api/todos';
+  const [newComments, setNewComments] = useState({});
   const [todoList, setTodoList] = useState([]);
   const [newTitle, setNewTitle] = useState("");
 
@@ -27,7 +27,7 @@ function App() {
   }
 
   async function toggleDone(id) {
-    const toggle_api_url = `${TODOLIST_API_URL}${id}/toggle/`
+    const toggle_api_url = `${TODOLIST_API_URL}/${id}/toggle`
     try {
       const response = await fetch(toggle_api_url, {
         method: 'PATCH',
@@ -61,7 +61,7 @@ function App() {
   }
 
   async function deleteTodo(id) {
-    const delete_api_url = `${TODOLIST_API_URL}${id}/`
+    const delete_api_url = `${TODOLIST_API_URL}/${id}`
     try {
       const response = await fetch(delete_api_url, {
         method: 'DELETE',
@@ -74,16 +74,34 @@ function App() {
     }
   }
 
+   async function addNewComment(todoId) {
+    try {
+      const url = `${TODOLIST_API_URL}/${todoId}/comments`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 'message': newComments[todoId] || "" }),
+      });
+      if (response.ok) {
+        setNewComments({ ...newComments, [todoId]: "" });
+        await fetchTodoList();
+      }
+    } catch (error) {
+      console.error("Error adding new comment:", error);
+    }
+  }
+
   return (
     <>
       <h1>Todo List</h1>
-            <ul>
+      <ul>
         {todoList.map(todo => (
           <li key={todo.id}>
             <span className={todo.done ? "done" : ""}>{todo.title}</span>
             <button onClick={() => {toggleDone(todo.id)}}>Toggle</button>
             <button onClick={() => {deleteTodo(todo.id)}}>❌</button>
-
             {(todo.comments) && (todo.comments.length > 0) && (
               <>
                 <b>Comments:</b>
@@ -94,7 +112,18 @@ function App() {
                 </ul>
               </>
             )}
-
+            <div className="new-comment-forms">
+              <input
+                type="text"
+                value={newComments[todo.id] || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setNewComments({ ...newComments, [todo.id]: value });
+                }}
+                
+              />
+              <button onClick={() => {alert(addNewComment(todo.id))}}>Add Comment</button>
+            </div>
           </li>
         ))}
       </ul>
