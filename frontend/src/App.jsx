@@ -4,7 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const TODOLIST_API_URL = 'http://127.0.0.1:5000/api/todos';
+  const TODOLIST_API_URL = 'http://127.0.0.1:5000/api/todos/';
   const [newComments, setNewComments] = useState({});
   const [todoList, setTodoList] = useState([]);
   const [newTitle, setNewTitle] = useState("");
@@ -27,7 +27,7 @@ function App() {
   }
 
   async function toggleDone(id) {
-    const toggle_api_url = `${TODOLIST_API_URL}/${id}/toggle`
+    const toggle_api_url = `${TODOLIST_API_URL}${id}/toggle`
     try {
       const response = await fetch(toggle_api_url, {
         method: 'PATCH',
@@ -61,7 +61,7 @@ function App() {
   }
 
   async function deleteTodo(id) {
-    const delete_api_url = `${TODOLIST_API_URL}/${id}`
+    const delete_api_url = `${TODOLIST_API_URL}${id}`
     try {
       const response = await fetch(delete_api_url, {
         method: 'DELETE',
@@ -76,7 +76,7 @@ function App() {
 
    async function addNewComment(todoId) {
     try {
-      const url = `${TODOLIST_API_URL}/${todoId}/comments`;
+      const url = `${TODOLIST_API_URL}${todoId}/comments`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -122,7 +122,7 @@ function App() {
                 }}
                 
               />
-              <button onClick={() => {alert(addNewComment(todo.id))}}>Add Comment</button>
+              <button onClick={() => {addNewComment(todo.id)}}>Add Comment</button>
             </div>
           </li>
         ))}
