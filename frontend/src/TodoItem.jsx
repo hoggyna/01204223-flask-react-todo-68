@@ -2,7 +2,7 @@
 import './App.css'
 import { useState } from 'react'
 
-function TodoItem({todo}) {
+function TodoItem({ todo, toggleDone, deleteTodo, addNewComment }) {
     const [newComment, setNewComment] = useState("");  
 
 
