@@ -11,10 +11,17 @@ function TodoItem({todo}) {
         <span className={todo.done ? "done" : ""}>{todo.title}</span>
         <button onClick={() => {toggleDone(todo.id)}}>Toggle</button>
         <button onClick={() => {deleteTodo(todo.id)}}>❌</button>
-        {(todo.comments) && (todo.comments.length > 0) && (
-        <>
-          // ละไว้
-        </>
+        {todo.comments && todo.comments.length > 0 ? (
+          <>
+          <div>{todo.comments.length} comments</div>
+          <ul>
+            {todo.comments.map((comment) => (
+              <li key={comment.id}>{comment.message}</li>
+            ))}
+          </ul>
+          </>
+        ) : (
+          <span>No comments</span>
         )}
         <div className="new-comment-forms">
         <input
