@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 import { useAuth } from "./context/AuthContext";
+import { useNavigate } from 'react-router-dom'
 
 //const { login, username } = useAuth();
 
@@ -10,6 +11,7 @@ function LoginForm({ loginUrl }) {
     const [errorMessage, setErrorMessage] = useState("");
     //const { login } = useAuth();
     const { login, username: loggedInUsername } = useAuth();
+    const navigate = useNavigate();
     
     async function handleLogin(e) {
         e.preventDefault();
@@ -24,7 +26,7 @@ function LoginForm({ loginUrl }) {
             if (response.ok) {
                 const data = await response.json();
                 console.log(data);
-                alert("Login successful. access token = " + data.access_token);
+                //alert("Login successful. access token = " + data.access_token);
                 login(username, data.access_token);
             } else if (response.status === 401) {
                 setErrorMessage("Invalid username or password");
@@ -32,6 +34,7 @@ function LoginForm({ loginUrl }) {
             } catch (error) {
                 console.log("Error logging in:", error);
             }
+            navigate('/');
     }
 
     return (
